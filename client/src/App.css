@@ -109,6 +109,17 @@ table td {
 
 }
 
+.register {
+    background-color: #586f8c;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 10px;
+}
+
 .cancel {
     background-color: #f44336;
     color: white;
@@ -219,4 +230,36 @@ table td {
     cursor: pointer;
 } 
 
+.registerContent {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /* opacity: 0; */
+    /* visibility: hidden; */
+    transition: all 0.5s ease-in-out;
+    /* border: 1px red solid; */
+
+}
+
+.registerInfo {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    /* border: 1px red solid; */
+    width: 100%;
+    height: 100%;
+    flex-wrap: wrap;
+}
+
+.registerInfo input {
+    width: 13.5%;
+    height: 50px;
+    font-size: 30px;
+    margin: 20px;
+    border: #588c7e 1px solid;
+    border-radius: 5px;
+    padding: 10px;
+}
 
