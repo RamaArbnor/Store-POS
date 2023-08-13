@@ -44,6 +44,28 @@ app.post('/products', (req, res) => {
     });
 });
 
+app.put('/products/:barcode', (req, res) => {
+    const product = req.body;
+    db.run('UPDATE products SET name = ?, price = ?, stock = ?, brand = ?, category = ?, description = ? WHERE barcode = ?', [product.name, product.price, product.stock, product.brand, product.category, product.description, req.params.barcode], (err) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ error: err.message });
+        }
+        res.json({ message: 'Product updated' });
+    });
+});
+
+app.delete('/products/:id', (req, res) => {
+    db.run('DELETE FROM products WHERE id = ?', [req.params.id], (err) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ error: err.message });
+        }
+        res.json({ message: 'Product deleted' });
+    });
+});
+
+
 // PORT
 const PORT = 5000;
 

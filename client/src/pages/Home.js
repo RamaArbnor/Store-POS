@@ -1,6 +1,7 @@
 import "../App.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 // import sqlite3 from 'sqlite3';
 
 export default function Home() {
@@ -20,6 +21,11 @@ export default function Home() {
     category: "",
     description: "",
   });
+  const [showUpdate, setShowUpdate] = useState(false);
+  const [toUpdateProduct, setToUpdateProduct] = useState({});
+  const [tempProduct, setTempProduct] = useState({});
+
+  const navigate = useNavigate();
 
   let addRow = (e) => {
     if (e.keyCode == 13 && e.shiftKey == false && e.target.innerText != "") {
@@ -36,10 +42,11 @@ export default function Home() {
               id: i,
               barcode: res.data.barcode,
               name: res.data.name,
-              stock: 1,
+              quantity: 1,
+              stock: res.data.stock,
               price: res.data.price,
-              column5: "test",
-              column6: "test",
+              description: res.data.description,
+              category: res.data.category,
             },
           ]);
           e.target.innerText = "";
@@ -51,6 +58,33 @@ export default function Home() {
       });
     }
     setTotal(calculateTotal());
+  };
+
+  let addRowToUpd = (e) => {
+    if (e.keyCode == 13 && e.shiftKey == false && e.target.innerText != "") {
+      e.preventDefault();
+      // console.log(e.target.innerText);
+      let barcode = e.target.innerText;
+      axios.get("http://localhost:5000/products/" + barcode).then((res) => {
+        if (res.data) {
+          setToUpdateProduct({
+            ...toUpdateProduct,
+            barcode: res.data.barcode,
+            name: res.data.name,
+            stock: res.data.stock,
+            price: res.data.price,
+            brand: res.data.brand,
+            category: res.data.category,
+            description: res.data.description,
+          });
+          setTempProduct(toUpdateProduct);
+          // e.target.innerText = "";
+        } else {
+          alert("Produkti nuk u gjet");
+          e.target.innerText = "";
+        }
+      });
+    }
   };
 
   //when products change recalculate total
@@ -118,9 +152,30 @@ export default function Home() {
     axios.post("http://localhost:5000/products", newProduct).then((res) => {
       console.log(res.data);
       setShowRegister(false);
-    }
-    );
+    });
+  };
 
+  let updateProduct = (e) => {
+    e.preventDefault();
+    // console.log(toUpdateProduct)
+    axios
+      .put(
+        "http://localhost:5000/products/" + toUpdateProduct.barcode,
+        toUpdateProduct
+      )
+      .then((res) => {
+        console.log(res.data);
+        setToUpdateProduct({});
+        setTempProduct({});
+        setShowRegister(false);
+      });
+  };
+
+  let cancelUpdate = (e) => {
+    e.preventDefault();
+    setToUpdateProduct({});
+    setTempProduct({});
+    setShowUpdate(false);
   };
 
   return (
@@ -172,23 +227,57 @@ export default function Home() {
                   }}
                 />
                 <h2>Emri: </h2>
-                <input type="text" onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}/>
+                <input
+                  type="text"
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, name: e.target.value })
+                  }
+                />
                 <h2>Sasia: </h2>
-                <input type="number" onChange={(e) => setNewProduct({...newProduct, stock: e.target.value})}/>
+                <input
+                  type="number"
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, stock: e.target.value })
+                  }
+                />
                 <h2>Cmimi: </h2>
-                <input type="number" onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}/>
+                <input
+                  type="number"
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, price: e.target.value })
+                  }
+                />
 
                 <h2>Brendi: </h2>
-                <input type="text" onChange={(e) => setNewProduct({...newProduct, brand: e.target.value})}/>
+                <input
+                  type="text"
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, brand: e.target.value })
+                  }
+                />
                 <h2>Kategori: </h2>
-                <input type="text" onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}/>
+                <input
+                  type="text"
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, category: e.target.value })
+                  }
+                />
                 <h2>Pershkrimi: </h2>
-                <input type="text" onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}/>
+                <input
+                  type="text"
+                  onChange={(e) =>
+                    setNewProduct({
+                      ...newProduct,
+                      description: e.target.value,
+                    })
+                  }
+                />
               </div>
 
               <div className="payPopUpButtons">
-
-                <button className="pay" onClick={registerProduct}>Regjistro</button>
+                <button className="pay" onClick={registerProduct}>
+                  Regjistro
+                </button>
 
                 <button
                   className="cancel"
@@ -202,9 +291,116 @@ export default function Home() {
         </div>
       )}
 
+      {showUpdate && (
+        <div className="payPopUp">
+          <div className="payPopUpContent">
+            <h1>Update</h1>
+            <form className="registerContent">
+              <div className="registerInfo">
+                <table>
+                  <tr>
+                    <th className="id-column"> </th>
+                    <th>Barcode</th>
+                    <th>Emri</th>
+                    {/* <th>Sasia</th> */}
+                    <th>Cmimi</th>
+                    <th>Stoku</th>
+                    <th>Pershkrimi</th>
+                    <th>Brendi</th>
+                    <th className="id-column">Del</th>
+                  </tr>
+                  <tr>
+                    <td className="id-column"> </td>
+                    <td
+                      contentEditable="true"
+                      onKeyDown={(e) => addRowToUpd(e)}
+                      onInput={(e) =>
+                        setToUpdateProduct({
+                          ...toUpdateProduct,
+                          barcode: e.target.textContent,
+                        })
+                      }
+                    >
+                      {tempProduct.barcode}
+                    </td>
+                    <td
+                      contentEditable="true"
+                      onInput={(e) =>
+                        setToUpdateProduct({
+                          ...toUpdateProduct,
+                          name: e.target.textContent,
+                        })
+                      }
+                    >
+                      {tempProduct.name}
+                    </td>
+                    {/* <td contentEditable="true" onInput={(e) => setToUpdateProduct({...toUpdateProduct, quantity: e.target.textContent})}>{tempProduct.quantity}</td> */}
+                    <td
+                      contentEditable="true"
+                      onInput={(e) =>
+                        setToUpdateProduct({
+                          ...toUpdateProduct,
+                          price: e.target.textContent,
+                        })
+                      }
+                    >
+                      {tempProduct.price}
+                    </td>
+                    <td
+                      contentEditable="true"
+                      onInput={(e) =>
+                        setToUpdateProduct({
+                          ...toUpdateProduct,
+                          stock: e.target.textContent,
+                        })
+                      }
+                    >
+                      {tempProduct.stock}
+                    </td>
+                    <td
+                      contentEditable="true"
+                      onInput={(e) =>
+                        setToUpdateProduct({
+                          ...toUpdateProduct,
+                          description: e.target.textContent,
+                        })
+                      }
+                    >
+                      {tempProduct.description}
+                    </td>
+                    <td
+                      contentEditable="true"
+                      onInput={(e) =>
+                        setToUpdateProduct({
+                          ...toUpdateProduct,
+                          stock: e.target.textContent,
+                        })
+                      }
+                    >
+                      {tempProduct.brand}
+                    </td>
+
+                    <td className="id-column"> </td>
+                  </tr>
+                </table>
+              </div>
+              <div className="payPopUpButtons">
+                <button className="pay" onClick={updateProduct}>
+                  Ruaj
+                </button>
+
+                <button className="cancel" onClick={cancelUpdate}>
+                  Anulo
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="header">
         <div className="logo">
-          <h1>Marketi SHPK</h1>
+          <h1>Marketi SHPK !</h1>
         </div>
         <div className="total">
           <h2>Totali: {total} €</h2>
@@ -218,8 +414,8 @@ export default function Home() {
           <th>Emri</th>
           <th>Sasia</th>
           <th>Cmimi</th>
-          <th>Column 5</th>
-          <th>Column 6</th>
+          <th>Pershkrimi</th>
+          <th>Brendi</th>
           <th className="id-column">Del</th>
         </tr>
         <tr>
@@ -232,7 +428,7 @@ export default function Home() {
           <td contentEditable="true"></td>
           <td className="id-column"></td>
         </tr>
-        <tr></tr>
+
         {products.map((product) => (
           <tr>
             <td className="id-column">{product.id}</td>
@@ -245,8 +441,8 @@ export default function Home() {
               {product.quantity}
             </td>
             <td>{product.price} €</td>
-            <td>{product.column5}</td>
-            <td>{product.column6}</td>
+            <td>{product.description}</td>
+            <td>{product.brand}</td>
             <td className="id-column">
               <button
                 className="deleteRow"
@@ -259,22 +455,34 @@ export default function Home() {
         ))}
       </table>
       <div className="utils">
-        <button className="pay" onClick={() => setShowConfirm(true)}>
-          Paguaj
-        </button>
-        {/* style={{backgroundColor: "#f44336"}} */}
-        <button
-          className="cancel"
-          onClick={() => {
-            setProducts([]);
-            setI(1);
-          }}
-        >
-          Anulo
-        </button>
-        <button className="register" onClick={() => setShowRegister(true)}>
-          Shto
-        </button>
+      <div>
+          <button className="register" onClick={() => setShowRegister(true)}>
+            Shto
+          </button>
+          <button className="register" onClick={() => setShowUpdate(true)}>
+            Ndrysho
+          </button>
+          <button className="register" onClick={() => navigate("/stock")}>
+            Stoku
+          </button>
+        </div>
+        <div>
+          <button className="pay" onClick={() => setShowConfirm(true)}>
+            Paguaj
+          </button>
+          {/* style={{backgroundColor: "#f44336"}} */}
+          <button
+            className="cancel"
+            onClick={() => {
+              setProducts([]);
+              setI(1);
+            }}
+          >
+            Anulo
+          </button>
+        </div>
+
+
       </div>
     </div>
   );
