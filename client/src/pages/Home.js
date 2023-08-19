@@ -51,9 +51,6 @@ export default function Home() {
           ]);
           e.target.innerText = "";
           setI(i + 1);
-        } else {
-          alert("Produkti nuk u gjet");
-          e.target.innerText = "";
         }
       });
     }
@@ -79,10 +76,7 @@ export default function Home() {
           });
           setTempProduct(toUpdateProduct);
           // e.target.innerText = "";
-        } else {
-          alert("Produkti nuk u gjet");
-          e.target.innerText = "";
-        }
+        } 
       });
     }
   };
@@ -132,6 +126,9 @@ export default function Home() {
     //print receipt
     //save to db
     //clear products
+    axios.put("http://localhost:5000/sell", products).then((res) => {
+      console.log(res.data);
+    });
 
     setProducts([]);
     setI(1);

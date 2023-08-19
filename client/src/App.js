@@ -1,20 +1,20 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import StockView from './pages/StockView';
 import './App.css';
 
 function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <div className="App">
         <Routes>
-          <Route path="/"  element={<Home />} />
-          <Route path="/stock"  element={<StockView />} />
-          {/* <Route path="/:username"  element={<Home/>} /> */}
-          <Route path='*' element={<h1>Error 404</h1>} />
+          <Route path="/" element={<Home />} />
+          <Route path="/stock" element={<StockView />} />
+          {/* <Route path="/:username" element={<Home/>} /> */}
+          <Route path="*" element={<h1>Error 404</h1>} />
         </Routes>
       </div>
-    </BrowserRouter>
+    </Router>
   );
 }
 
