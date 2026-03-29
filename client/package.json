@@ -3,57 +3,39 @@
   "version": "0.1.0",
   "author": "Arbnor Rama",
   "private": true,
+  "main": "./main.js",
+  "homepage": "./",
   "dependencies": {
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
     "axios": "^0.27.2",
-    "concurrently": "^7.5.0",
     "cors": "^2.8.5",
-    "cross-env": "^7.0.3",
-    "crypto-browserify": "^3.12.0",
     "dotenv": "^16.3.1",
-    "export-to-csv": "^0.2.1",
     "express": "^4.18.2",
     "material-react-table": "^1.14.0",
-    "path-browserify": "^1.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.14.2",
     "react-scripts": "5.0.1",
     "sqlite3": "^5.1.6",
-    "wait-on": "^6.0.1",
     "web-vitals": "^2.1.4"
   },
-  "main": "./main.js",
-  "homepage": "./",
+  "scripts": {
+    "dev": "concurrently --kill-others \"cross-env BROWSER=none npm start\" \"wait-on tcp:127.0.0.1:3000 && cross-env ELECTRON_START_URL=http://localhost:3000 electron .\"",
+    "stop": "taskkill /F /IM electron.exe & taskkill /F /IM node.exe",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "electron": "electron .",
+    "dist": "react-scripts build && electron-builder"
+  },
   "build": {
     "appId": "com.Store.app",
     "directories": {
       "output": "dist"
     },
     "files": [
-      "./main.js",
-      "**/*",
-      "*",
-      "build/**/*",
-      "server/**/*"
+      "main.js",
+      "build/**/*"
     ],
     "extends": null
-  },
-  "scripts": {
-    "full": "concurrently \"cross-env BROWSER=none npm start\" \"node ./server/index.js\" \"wait-on tcp:127.0.0.1:3000 && cross-env ELECTRON_START_URL=http://localhost:3000 electron .\"",
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "electron": "electron .",
-    "electron:serve": "concurrently -k \"cross-env BROWSER=none npm start\" \"npm run electron:start\"",
-    "electron:build": "yarn build && electron-builder -c.extraMetadata.main=build/main.js",
-    "electron:start": "wait-on tcp:3000 && electron .",
-    "electron-react": "concurrently \"cross-env BROWSER=none npm start\" \"wait-on tcp:127.0.0.1:3000 && electron . \"",
-    "package": "electron-builder -c.extraMetadata.main=build/main.js",
-    "dist": "electron-builder"
   },
   "eslintConfig": {
     "extends": [
@@ -74,7 +56,10 @@
     ]
   },
   "devDependencies": {
+    "concurrently": "^7.5.0",
+    "cross-env": "^7.0.3",
     "electron": "^25.4.0",
-    "electron-builder": "^24.6.3"
+    "electron-builder": "^24.6.3",
+    "wait-on": "^6.0.1"
   }
 }
