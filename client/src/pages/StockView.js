@@ -1,140 +1,87 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { MaterialReactTable } from 'material-react-table';
-import { Box, Button } from '@mui/material';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { ExportToCsv } from 'export-to-csv'; //or use your library of choice here
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-
-
-//nested data is ok, see accessorKeys in ColumnDef below
-
+import "../App.css";
+import React, { useEffect, useState } from "react";
+import { MaterialReactTable } from "material-react-table";
+import { Box, Button } from "@mui/material";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function StockView() {
-    const [data, setData] = useState([]);
-    const [columns, setColumns] = useState([]);
+  const [data, setData] = useState([]);
+  const [columns, setColumns] = useState([]);
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
+  const deleteProduct = (rows) => {
+    rows.forEach((row) => {
+      axios
+        .delete(`http://localhost:5000/products/${row.original.id}`)
+        .then(() => window.location.reload());
+    });
+  };
 
-    const csvOptions = {
-        fieldSeparator: ',',
-        quoteStrings: '"',
-        decimalSeparator: '.',
-        showLabels: true,
-        useBom: true,
-        useKeysAsHeaders: false,
-        headers: columns.map((c) => c.header),
-      };
+  useEffect(() => {
+    axios
+      .get("http://localhost:5000/products")
+      .then((res) => {
+        setData(res.data);
+        setColumns([
+          { accessorKey: "id", header: "ID", size: 60 },
+          { accessorKey: "barcode", header: "Barkodi", size: 140 },
+          { accessorKey: "name", header: "Emri", size: 200 },
+          {
+            accessorKey: "price",
+            header: "Cmimi (€)",
+            size: 110,
+            Cell: ({ cell }) => `${Number(cell.getValue()).toFixed(2)} €`,
+          },
+          { accessorKey: "stock", header: "Stoku", size: 90 },
+          { accessorKey: "brand", header: "Brendi", size: 140 },
+          { accessorKey: "category", header: "Kategori", size: 140 },
+          { accessorKey: "description", header: "Pershkrimi", size: 220 },
+        ]);
+      })
+      .catch((err) => console.error("Error fetching data:", err));
+  }, []);
 
-    const deleteProduct = (rows) => {
-        rows.forEach((row) => {
-            axios.delete(`http://localhost:5000/products/${row.original.id}`)
-            .then(res => {
-                // console.log(row);
-                // console.log(res.data);
-                setData(data.filter(item => item.id !== row.id));
-                window.location.reload();
-            })
-        })
-      };
-    
-      const handleExportData = () => {
-        // csvExporter.generateCsv(data);
-      };
-
-    useEffect(() => {
-        axios.get('http://localhost:5000/products')
-            .then(res => {
-                setData(res.data);
-                setColumns( 
-                    [
-                      {
-                        accessorKey: 'id', //access nested data with dot notation
-                        header: 'ID',
-                        size: 25,
-                      },
-                      {
-                        accessorKey: 'barcode',
-                        header: 'Barkodi',
-                        size: 150,
-                      },
-                      {
-                        accessorKey: 'name', //normal accessorKey
-                        header: 'Emri',
-                        size: 200,
-                      },
-                      {
-                        accessorKey: 'stock',
-                        header: 'Stoku',
-                        size: 150,
-                      },
-                      {
-                        accessorKey: 'brand',
-                        header: 'Furnitori',
-                        size: 150,
-                      },
-                      {
-                        accessorKey: 'category',
-                        header: 'Kategori',
-                        size: 150,
-                      },
-                      {
-                        accessorKey: 'description',
-                        header: 'Pershkrimi',
-                        size: 150,
-                      },
-                    ],
-                    // name, price, stock, brand, category, description, barcode
-                    [],
-                  )
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-    }, []);
-    
-    
-
-    return (    
-        <MaterialReactTable 
-            data={data}
-            columns={columns}
-            title="Stoku"
-            search={true}
-            paging={true}
-            pageSize={10}
-            exportToCsv={true}
-            exportToXlsx={true}
-            exportToPdf={true}
-            exportAllData={true}
-            exportColumnData={true}
-            exportFileName="Stoku"
-            exportFileExtension="xlsx"
-            exportData={data}
-            enableRowSelection
-
-      renderTopToolbarCustomActions={({ table }) => (
-        <Box
-          sx={{ display: 'flex', gap: '1rem', p: '0.5rem', flexWrap: 'wrap' }}
-        >
-            
-            <Button
-                onClick={() => navigate('/')}
+  return (
+    <div className="stock-layout">
+      <header className="pos-header">
+        <div className="pos-header__brand">
+          <div className="pos-header__logo">M</div>
+          <h1 className="pos-header__title">Stoku i Produkteve</h1>
+        </div>
+      </header>
+      <main className="stock-main">
+        <MaterialReactTable
+          data={data}
+          columns={columns}
+          enableRowSelection
+          renderTopToolbarCustomActions={({ table }) => (
+            <Box sx={{ display: "flex", gap: "0.6rem", p: "0.4rem" }}>
+              <Button
+                onClick={() => navigate("/")}
+                variant="outlined"
+                size="small"
+                sx={{ textTransform: "none", fontWeight: 500 }}
+              >
+                ← Kthehu
+              </Button>
+              <Button
+                disabled={
+                  !table.getIsSomeRowsSelected() &&
+                  !table.getIsAllRowsSelected()
+                }
+                onClick={() => deleteProduct(table.getSelectedRowModel().rows)}
                 variant="contained"
-            >Kthehu</Button>
-          <Button
-            disabled={
-              !table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
-            }
-            //only export selected rows
-            onClick={() => deleteProduct(table.getSelectedRowModel().rows)}
-            startIcon={<FileDownloadIcon />}
-            variant="contained"
-          >
-            Fshij Produktet
-          </Button>
-        </Box>
-      )}
-        />)
-
+                color="error"
+                size="small"
+                sx={{ textTransform: "none", fontWeight: 500 }}
+              >
+                Fshij të zgjedhurat
+              </Button>
+            </Box>
+          )}
+        />
+      </main>
+    </div>
+  );
 }

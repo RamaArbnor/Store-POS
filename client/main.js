@@ -1,10 +1,34 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
-// const db = new sqlite3.Database('./storedb/store.db');
-//get db from %appdata% folder if doesnt exist create a folder and db
-const db = new sqlite3.Database(path.join(app.getPath('appData'), './storedb/store.db'));
+
+const dbDir = path.join(app.getPath('appData'), 'storedb');
+const dbPath = path.join(dbDir, 'store.db');
+
+if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+}
+
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+        console.error('Failed to connect to database:', err.message);
+    }
+});
+
+db.run(`
+    CREATE TABLE IF NOT EXISTS products (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        name        TEXT    NOT NULL,
+        price       REAL    NOT NULL,
+        stock       INTEGER NOT NULL DEFAULT 0,
+        brand       TEXT,
+        category    TEXT,
+        description TEXT,
+        barcode     TEXT    UNIQUE
+    )
+`);
 
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv').config();
@@ -106,13 +130,11 @@ function createWindow () {
     }
   })
 
-  const reactAppUrl = url.format({
+  const reactAppUrl = process.env.ELECTRON_START_URL || url.format({
     pathname: path.join(__dirname, '/build/index.html'),
     protocol: 'file:',
     slashes: true
-    });
-    console.log(reactAppUrl)
-  // and load the index.html of the app.
+  });
   mainWindow.loadURL(reactAppUrl)
 
   // Open the DevTools.

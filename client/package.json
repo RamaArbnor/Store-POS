@@ -33,16 +33,16 @@
       "output": "dist"
     },
     "files": [
-      "./main.js", 
+      "./main.js",
       "**/*",
       "*",
-      "build/**/*", 
-      "server/**/*" 
+      "build/**/*",
+      "server/**/*"
     ],
     "extends": null
-},
+  },
   "scripts": {
-    "full": "concurrently \"cross-env BROWSER=none npm start\" \"node ./server/index.js\" \" wait-on tcp:127.0.0.1:3000 && electron . \"",
+    "full": "concurrently \"cross-env BROWSER=none npm start\" \"node ./server/index.js\" \"wait-on tcp:127.0.0.1:3000 && cross-env ELECTRON_START_URL=http://localhost:3000 electron .\"",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

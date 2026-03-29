@@ -1,9 +1,44 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./storedb/store.db');
+const fs = require('fs');
+const path = require('path');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv').config();
 const cors = require('cors');
+
+const dbDir = path.join(__dirname, 'storedb');
+const dbPath = path.join(dbDir, 'store.db');
+
+if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+}
+
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+        console.error('Failed to connect to database:', err.message);
+    } else {
+        console.log('Connected to SQLite database at', dbPath);
+    }
+});
+
+db.run(`
+    CREATE TABLE IF NOT EXISTS products (
+        id        INTEGER PRIMARY KEY AUTOINCREMENT,
+        name      TEXT    NOT NULL,
+        price     REAL    NOT NULL,
+        stock     INTEGER NOT NULL DEFAULT 0,
+        brand     TEXT,
+        category  TEXT,
+        description TEXT,
+        barcode   TEXT    UNIQUE
+    )
+`, (err) => {
+    if (err) {
+        console.error('Failed to create products table:', err.message);
+    } else {
+        console.log('Products table ready.');
+    }
+});
 
 const app = express();
 
